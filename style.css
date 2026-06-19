@@ -10,6 +10,16 @@
   --display: "Cormorant Garamond", "Noto Serif TC", serif;
 }
 
+html{
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html, body{
+  overflow-x: hidden;
+  width: 100%;
+}
+
 *{box-sizing:border-box;}
 
 body{
@@ -64,7 +74,7 @@ body{
   border-radius:2px;
   background:var(--cream);
   font-family:var(--serif);
-  font-size:14px;
+  font-size:16px;
   color:var(--ink);
   margin-bottom:14px;
   text-align:center;
@@ -221,7 +231,7 @@ body{
   font-family:var(--serif);
   color:var(--ink);
   padding:12px 14px;
-  font-size:14px;
+  font-size:16px;
   margin-bottom:12px;
   resize:vertical;
 }
