@@ -7,7 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 </head>
 <body>
 
@@ -92,6 +94,14 @@
   <footer class="footer">為我們兩個人，安靜地收藏。</footer>
 </div>
 
-<script type="module" src="app.js"></script>
+<script type="module">
+  // 自動加上時間戳記，確保每次都讀取最新版本，不會被瀏覽器快取卡住
+  const t = Date.now();
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'style.css?t=' + t;
+  document.head.appendChild(link);
+  import('./app.js?t=' + t);
+</script>
 </body>
 </html>
