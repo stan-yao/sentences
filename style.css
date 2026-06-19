@@ -1,0 +1,289 @@
+:root{
+  --cream: #FAF7F0;
+  --cream-deep: #F1EADA;
+  --ink: #4A3F35;
+  --ink-soft: #8A7A68;
+  --latte: #C9A576;
+  --latte-soft: #E3D2B6;
+  --line: #E3D9C8;
+  --serif: "Noto Serif TC", serif;
+  --display: "Cormorant Garamond", "Noto Serif TC", serif;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:0.02em;
+}
+
+.hidden{display:none !important;}
+
+/* ---------- 密碼門 ---------- */
+.gate{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(201,165,118,0.10), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(201,165,118,0.10), transparent 50%),
+    var(--cream);
+}
+.gate-card{
+  text-align:center;
+  padding:56px 48px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:2px;
+  box-shadow:0 24px 60px -24px rgba(74,63,53,0.18);
+  width:min(360px, 86vw);
+}
+.gate-mark{
+  font-family:var(--display);
+  font-size:42px;
+  font-style:italic;
+  color:var(--latte);
+  margin:0 0 4px;
+  letter-spacing:0.1em;
+}
+.gate-sub{
+  font-size:13px;
+  color:var(--ink-soft);
+  margin:0 0 28px;
+}
+.gate-card input{
+  width:100%;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:2px;
+  background:var(--cream);
+  font-family:var(--serif);
+  font-size:14px;
+  color:var(--ink);
+  margin-bottom:14px;
+  text-align:center;
+}
+.gate-card input:focus{outline:none;border-color:var(--latte);}
+.gate-card button{
+  width:100%;
+  padding:12px;
+  border:none;
+  background:var(--ink);
+  color:var(--cream);
+  letter-spacing:0.15em;
+  font-family:var(--serif);
+  font-size:14px;
+  border-radius:2px;
+  cursor:pointer;
+  transition:background 0.25s ease;
+}
+.gate-card button:hover{background:var(--latte);}
+.gate-error{
+  color:#A8645B;
+  font-size:12px;
+  min-height:18px;
+  margin-top:10px;
+}
+
+/* ---------- 整體版面 ---------- */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:16px;
+  padding:36px clamp(20px,6vw,64px) 20px;
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:16px;}
+.brand-mark{
+  font-family:var(--display);
+  font-size:34px;
+  font-style:italic;
+  color:var(--latte);
+  border:1px solid var(--latte-soft);
+  width:48px;height:48px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+}
+.brand-text h1{
+  margin:0;
+  font-size:22px;
+  font-weight:500;
+  letter-spacing:0.08em;
+}
+.brand-text p{
+  margin:2px 0 0;
+  font-size:12px;
+  color:var(--ink-soft);
+}
+
+.whoami{display:flex;align-items:center;gap:10px;}
+.whoami-label{font-size:12px;color:var(--ink-soft);}
+.whoami-buttons{display:flex;gap:8px;}
+.who-btn{
+  padding:8px 18px;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:20px;
+  font-family:var(--serif);
+  font-size:13px;
+  color:var(--ink-soft);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.who-btn.active{
+  background:var(--ink);
+  color:var(--cream);
+  border-color:var(--ink);
+}
+
+.layout{
+  max-width:760px;
+  margin:0 auto;
+  padding:40px clamp(20px,6vw,0px) 80px;
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+}
+
+.card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:2px;
+  padding:32px clamp(24px,5vw,44px);
+}
+
+.eyebrow{
+  font-size:11px;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  color:var(--latte);
+  margin:0 0 18px;
+}
+
+/* ---------- 每日一句 ---------- */
+.daily-card{text-align:center;position:relative;}
+.daily-text{
+  font-family:var(--display);
+  font-size:clamp(22px,4vw,30px);
+  font-style:italic;
+  line-height:1.6;
+  margin:8px 0 16px;
+  color:var(--ink);
+  quotes:"「" "」";
+}
+.daily-text::before{content:"「";color:var(--latte-soft);margin-right:2px;}
+.daily-text::after{content:"」";color:var(--latte-soft);margin-left:2px;}
+.daily-source{
+  font-size:13px;
+  color:var(--ink-soft);
+  margin:0;
+}
+.hr{
+  width:48px;
+  height:1px;
+  background:var(--latte);
+  margin:20px auto 0;
+}
+
+/* ---------- 積分 ---------- */
+.score-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:32px;
+}
+.score-item{text-align:center;}
+.score-name{margin:0 0 6px;font-size:13px;color:var(--ink-soft);letter-spacing:0.05em;}
+.score-num{
+  margin:0;
+  font-family:var(--display);
+  font-size:38px;
+  color:var(--latte);
+}
+.score-divider{font-size:20px;color:var(--line);}
+
+/* ---------- 新增 ---------- */
+.add-card textarea,
+.add-card input,
+.list-card input{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:2px;
+  background:var(--cream);
+  font-family:var(--serif);
+  color:var(--ink);
+  padding:12px 14px;
+  font-size:14px;
+  margin-bottom:12px;
+  resize:vertical;
+}
+.add-card textarea:focus,
+.add-card input:focus,
+.list-card input:focus{outline:none;border-color:var(--latte);}
+.add-card button{
+  padding:10px 28px;
+  border:none;
+  background:var(--ink);
+  color:var(--cream);
+  border-radius:2px;
+  font-family:var(--serif);
+  letter-spacing:0.1em;
+  cursor:pointer;
+  transition:background 0.25s ease;
+}
+.add-card button:hover{background:var(--latte);}
+.add-msg{font-size:12px;color:var(--ink-soft);margin:10px 0 0;min-height:16px;}
+
+/* ---------- 列表 ---------- */
+.sentence-list{margin-top:18px;display:flex;flex-direction:column;}
+.sentence-item{
+  padding:18px 0;
+  border-top:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.sentence-item:first-child{border-top:none;}
+.sentence-item .text{
+  font-family:var(--display);
+  font-size:17px;
+  font-style:italic;
+  line-height:1.55;
+}
+.sentence-item .meta{
+  font-size:12px;
+  color:var(--ink-soft);
+  display:flex;
+  gap:10px;
+}
+.sentence-item .tag{
+  color:var(--latte);
+}
+.empty-hint{
+  color:var(--ink-soft);
+  font-size:13px;
+  text-align:center;
+  padding:30px 0;
+}
+
+.footer{
+  text-align:center;
+  font-size:12px;
+  color:var(--ink-soft);
+  padding:30px 0 50px;
+  letter-spacing:0.1em;
+}
+
+@media (max-width:600px){
+  .topbar{padding:28px 20px 16px;}
+  .layout{padding:28px 20px 60px;}
+  .card{padding:26px 22px;}
+}

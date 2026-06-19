@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拾句 · 我們的句子收藏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 密碼門 -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <p class="gate-mark">拾句</p>
+    <p class="gate-sub">輕輕推開，走進我們的句子收藏</p>
+    <input type="password" id="gate-input" placeholder="請輸入通行密語" autocomplete="off">
+    <button id="gate-btn">進入</button>
+    <p id="gate-error" class="gate-error"></p>
+  </div>
+</div>
+
+<!-- 主畫面 -->
+<div id="app" class="app hidden">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">拾</span>
+      <div class="brand-text">
+        <h1>拾句</h1>
+        <p>把喜歡的句子，一句一句拾起來</p>
+      </div>
+    </div>
+
+    <div class="whoami">
+      <span class="whoami-label">我是</span>
+      <div class="whoami-buttons">
+        <button class="who-btn" data-who="A">__NAME_A__</button>
+        <button class="who-btn" data-who="B">__NAME_B__</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <!-- 每日一句 -->
+    <section class="card daily-card">
+      <p class="eyebrow">今日的句子 · <span id="today-date"></span></p>
+      <blockquote id="daily-sentence" class="daily-text">尚無句子，從新增一句開始吧。</blockquote>
+      <p id="daily-source" class="daily-source"></p>
+      <div class="hr"></div>
+    </section>
+
+    <!-- 積分板 -->
+    <section class="card score-card">
+      <p class="eyebrow">積分</p>
+      <div class="score-row">
+        <div class="score-item">
+          <p class="score-name" id="score-name-A">__NAME_A__</p>
+          <p class="score-num" id="score-num-A">0</p>
+        </div>
+        <div class="score-divider">·</div>
+        <div class="score-item">
+          <p class="score-name" id="score-name-B">__NAME_B__</p>
+          <p class="score-num" id="score-num-B">0</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 新增句子 -->
+    <section class="card add-card">
+      <p class="eyebrow">新增一句</p>
+      <textarea id="new-text" placeholder="寫下那句讓你心動、安靜下來，或想留住的話……" rows="3"></textarea>
+      <input type="text" id="new-source" placeholder="出處（作者／書名／電影，選填）">
+      <button id="add-btn">收進句子盒</button>
+      <p id="add-msg" class="add-msg"></p>
+    </section>
+
+    <!-- 搜尋 + 列表 -->
+    <section class="card list-card">
+      <p class="eyebrow">句子盒</p>
+      <input type="text" id="search-input" placeholder="搜尋句子、出處或新增者……">
+      <div id="sentence-list" class="sentence-list">
+        <p class="empty-hint">載入中……</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">為我們兩個人，安靜地收藏。</footer>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
