@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>批量匯入句子 · 拾句</title>
+<style>
+  body{font-family:"Noto Serif TC",serif;background:#FAF7F0;color:#4A3F35;max-width:680px;margin:40px auto;padding:0 20px;}
+  h1{font-size:20px;}
+  textarea{width:100%;height:300px;padding:14px;font-family:monospace;font-size:14px;border:1px solid #E3D9C8;border-radius:4px;box-sizing:border-box;}
+  select,button{padding:10px 16px;font-size:14px;border-radius:4px;border:1px solid #E3D9C8;font-family:"Noto Serif TC",serif;}
+  button{background:#4A3F35;color:#FAF7F0;border:none;cursor:pointer;margin-top:12px;}
+  button:hover{background:#C9A576;}
+  .row{display:flex;gap:12px;align-items:center;margin:14px 0;}
+  #log{white-space:pre-wrap;font-size:13px;background:#fff;border:1px solid #E3D9C8;padding:14px;margin-top:16px;border-radius:4px;max-height:240px;overflow-y:auto;}
+  .hint{font-size:13px;color:#8A7A68;line-height:1.7;}
+</style>
+</head>
+<body>
+
+<h1>批量匯入句子</h1>
+<p class="hint">
+  每一行一句，格式：<b>句子｜出處｜新增者(A或B)</b><br>
+  出處跟新增者可以省略，例如直接只打「句子」也可以（新增者預設用下面選的人）。<br>
+  範例：<br>
+  願你在每個告別後，依然相信美好。｜張愛玲｜A<br>
+  山有木兮木有枝，心悅君兮君不知。｜詩經<br>
+  時間從來不語，卻回答了所有問題。
+</p>
+
+<div class="row">
+  <label>沒填「新增者」時，預設算誰的：</label>
+  <select id="default-who">
+    <option value="A">A（NAME_A）</option>
+    <option value="B">B（NAME_B）</option>
+  </select>
+</div>
+
+<textarea id="bulk-text" placeholder="貼上你的句子清單..."></textarea>
+
+<button id="import-btn">開始匯入</button>
+
+<div id="log"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // ⚠️ 請填入跟 app.js 一模一樣的 firebaseConfig
+  const firebaseConfig = {
+    apiKey: "AIzaSyB1f4c0-m_uapAqoUhnVIIG5htUs45QVTU",
+    authDomain: "sentences-d12f3.firebaseapp.com",
+    projectId: "sentences-d12f3",
+    storageBucket: "sentences-d12f3.firebasestorage.app",
+    messagingSenderId: "117935388501",
+    appId: "1:117935388501:web:5aa84e92227dc9dfb2a1dc"
+  };
+
+  // ⚠️ 請跟 app.js 裡的名字保持一致
+  const NAME_A = "Stan";
+  const NAME_B = "Eirene";
+
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getFirestore(fbApp);
+  const sentencesCol = collection(db, "sentences");
+
+  const log = document.getElementById("log");
+  function writeLog(msg) {
+    log.textContent += msg + "\n";
+    log.scrollTop = log.scrollHeight;
+  }
+
+  document.getElementById("import-btn").addEventListener("click", async () => {
+    const raw = document.getElementById("bulk-text").value;
+    const defaultWho = document.getElementById("default-who").value;
+    const lines = raw.split("\n").map(l => l.trim()).filter(Boolean);
+
+    if (lines.length === 0) {
+      writeLog("沒有偵測到任何句子。");
+      return;
+    }
+
+    log.textContent = "";
+    writeLog(`偵測到 ${lines.length} 句，開始匯入...`);
+
+    let success = 0;
+    for (const line of lines) {
+      const parts = line.split("｜").map(p => p.trim());
+      const text = parts[0];
+      const source = parts[1] || "";
+      let who = (parts[2] || "").toUpperCase();
+      if (who !== "A" && who !== "B") who = defaultWho;
+
+      if (!text) continue;
+
+      try {
+        await addDoc(sentencesCol, {
+          text,
+          source,
+          addedBy: who,
+          addedByName: who === "A" ? NAME_A : NAME_B,
+          createdAt: serverTimestamp()
+        });
+        success++;
+        writeLog(`✓ ${text}`);
+      } catch (err) {
+        writeLog(`✗ 失敗：${text}（${err.message}）`);
+      }
+    }
+
+    writeLog(`\n完成，成功匯入 ${success} / ${lines.length} 句。`);
+  });
+</script>
+
+</body>
+</html>
