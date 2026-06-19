@@ -32,6 +32,7 @@ const db = getFirestore(fbApp);
 const sentencesCol = collection(db, "sentences");
 
 let allSentences = []; // 本地快取，從 Firestore 同步
+let booted = false; // 是否已經啟動過（避免重複訂閱 Firestore）
 
 // ---------------- 把名字套進畫面 ----------------
 document.querySelectorAll('[data-who="A"]').forEach(el => el.textContent = CONFIG.NAME_A);
@@ -99,7 +100,6 @@ function nameOf(who) {
 }
 
 // ---------------- 啟動：訂閱 Firestore ----------------
-let booted = false;
 function boot() {
   if (booted) return;
   booted = true;
