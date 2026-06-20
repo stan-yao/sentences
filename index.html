@@ -680,6 +680,7 @@ body{
 }
 .board-item-actions button:hover{opacity:1;}
 .board-item-actions button.is-active{color:var(--latte);opacity:1;font-weight:500;}
+.board-item-actions button.delete-btn:hover{color:#B0492F;opacity:1;}
 
 /* ---------- 句子完整內容彈窗 ---------- */
 .sentence-item{cursor:pointer;}
@@ -950,7 +951,7 @@ const CONFIG = {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot,
-  query, orderBy, serverTimestamp, updateDoc, doc
+  query, orderBy, serverTimestamp, updateDoc, deleteDoc, doc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const fbApp = initializeApp(CONFIG.firebaseConfig);
@@ -1372,6 +1373,7 @@ function renderBoard() {
         <div class="board-item-actions">
           <button type="button" class="pin-btn ${m.pinned ? "is-active" : ""}" data-id="${escapeHtml(m.id)}">${m.pinned ? "已釘選" : "釘選"}</button>
           ${m.type === "reminder" ? `<button type="button" class="done-btn ${m.done ? "is-active" : ""}" data-id="${escapeHtml(m.id)}">${m.done ? "已處理" : "標記已處理"}</button>` : ""}
+          ${m.author === currentWho() ? `<button type="button" class="delete-btn" data-id="${escapeHtml(m.id)}">刪除</button>` : ""}
         </div>
       </div>
     </div>
@@ -1388,6 +1390,13 @@ function renderBoard() {
     btn.addEventListener("click", () => {
       const m = allBoardMsgs.find(x => x.id === btn.dataset.id);
       updateDoc(doc(db, "board", btn.dataset.id), { done: !m.done });
+    });
+  });
+  list.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (confirm("確定要刪除這則留言嗎？")) {
+        deleteDoc(doc(db, "board", btn.dataset.id));
+      }
     });
   });
 }
