@@ -862,18 +862,6 @@ html.theme-dark .card{
 }
 
 /* ---------- 今天吃什麼：選項清單（標籤式） ---------- */
-.wheel-back-btn{
-  border:none;
-  background:transparent;
-  font-family:var(--serif);
-  font-size:13px;
-  color:var(--ink-soft);
-  cursor:pointer;
-  padding:0 0 4px;
-  margin-bottom:6px;
-}
-.wheel-back-btn:hover{color:var(--latte);}
-
 .wheel-stage{
   position:relative;
   height:212px;
@@ -1318,7 +1306,7 @@ html.theme-dark .modal{
     <section class="card wheel-draw-card">
       <p class="eyebrow">抽籤</p>
       <div class="wheel-draw-hint-row">
-        <p class="wheel-draw-hint">勾選一個或多個標籤，從符合的選項裡抽一個：</p>
+        <p class="wheel-draw-hint">勾選標籤可篩選範圍，不選則從全部選項中抽：</p>
         <button id="wheel-clear-tags-btn" type="button" class="wheel-clear-tags-btn">全部清除</button>
       </div>
       <div id="wheel-draw-tag-picker" class="wheel-tag-picker">
@@ -2224,14 +2212,14 @@ function drawWheel() {
   const msg = document.getElementById("wheel-msg");
   if (cupZone.classList.contains("shaking")) return;
 
-  if (selectedDrawTagIds.size === 0) {
-    msg.textContent = "請先勾選至少一個標籤。";
-    return;
-  }
+  const items = selectedDrawTagIds.size === 0
+    ? allFoodItems
+    : allFoodItems.filter(f => (f.tagIds || []).some(id => selectedDrawTagIds.has(id)));
 
-  const items = allFoodItems.filter(f => (f.tagIds || []).some(id => selectedDrawTagIds.has(id)));
   if (items.length === 0) {
-    msg.textContent = "這些標籤底下還沒有任何選項，先新增一個吧。";
+    msg.textContent = selectedDrawTagIds.size === 0
+      ? "還沒有任何選項，先新增一個吧。"
+      : "這些標籤底下還沒有任何選項，先新增一個吧。";
     return;
   }
 
