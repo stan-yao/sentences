@@ -453,7 +453,10 @@ html.theme-dark .card{
   font-family:var(--display);
   font-size:38px;
   color:var(--latte);
+  cursor:pointer;
+  transition:opacity 0.2s ease;
 }
+.score-num:hover{opacity:0.7;}
 .score-divider{font-size:20px;color:var(--line);}
 
 /* ---------- 新增 ---------- */
@@ -533,6 +536,34 @@ html.theme-dark .card{
   color:#fff;
 }
 .sentence-list{margin-top:18px;display:flex;flex-direction:column;}
+.author-filter-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--latte);
+  background:rgba(184,153,104,0.12);
+  border-radius:999px;
+  padding:6px 8px 6px 14px;
+  font-size:13px;
+  color:var(--ink);
+  margin:-4px 0 14px;
+}
+#author-filter-clear{
+  border:none;
+  background:transparent;
+  color:var(--ink-soft);
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:11px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  box-sizing:border-box;
+}
+#author-filter-clear:hover{background:var(--latte);color:#fff;}
 .sentence-item{
   padding:18px 0;
   border-top:1px solid var(--line);
@@ -1143,6 +1174,60 @@ html.theme-dark .modal{
 .modal-copy:hover{background:var(--latte-soft);color:#fff;}
 .modal-copy.copied{color:#fff;background:var(--latte);}
 
+.modal-actions{
+  display:flex;
+  gap:18px;
+  margin-top:18px;
+}
+.modal-actions button{
+  border:none;
+  background:transparent;
+  font-size:12px;
+  color:var(--ink-soft);
+  cursor:pointer;
+  padding:0;
+}
+.modal-actions button:hover{color:var(--latte);}
+.modal-delete-btn:hover{color:#B0492F !important;}
+
+#modal-edit textarea,
+#modal-edit input{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,0.4);
+  font-family:var(--serif);
+  color:var(--ink);
+  padding:12px 16px;
+  font-size:16px;
+  margin-bottom:12px;
+  resize:vertical;
+}
+#modal-edit textarea:focus,
+#modal-edit input:focus{outline:none;border-color:var(--latte);}
+.modal-edit-who-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:16px;
+}
+.modal-who-btn{
+  padding:7px 16px;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:999px;
+  font-family:var(--serif);
+  font-size:13px;
+  color:var(--ink-soft);
+  cursor:pointer;
+  transition:all 0.2s ease;
+}
+.modal-who-btn.active{
+  background:var(--ink);
+  color:var(--cream);
+  border-color:var(--ink);
+}
+
 @media (max-width:600px){
   .topbar{padding:28px 20px 16px;}
   .layout{padding:28px 20px 60px;}
@@ -1270,6 +1355,10 @@ html.theme-dark .modal{
         </div>
       </div>
       <input type="text" id="search-input" placeholder="搜尋句子、出處或新增者……">
+      <div id="author-filter-chip" class="author-filter-chip hidden">
+        <span id="author-filter-text"></span>
+        <button type="button" id="author-filter-clear">✕</button>
+      </div>
       <div id="sentence-list" class="sentence-list">
         <p class="empty-hint">載入中……</p>
       </div>
@@ -1383,8 +1472,31 @@ html.theme-dark .modal{
       </svg>
     </button>
     <button id="modal-close" class="modal-close" aria-label="關閉">✕</button>
-    <p id="modal-text" class="modal-text"></p>
-    <p id="modal-meta" class="modal-meta"></p>
+
+    <div id="modal-view">
+      <p id="modal-text" class="modal-text"></p>
+      <p id="modal-meta" class="modal-meta"></p>
+      <div class="modal-actions">
+        <button id="modal-edit-btn" type="button">編輯</button>
+        <button id="modal-delete-btn" type="button" class="modal-delete-btn">刪除</button>
+      </div>
+    </div>
+
+    <div id="modal-edit" class="hidden">
+      <textarea id="modal-edit-text" rows="4"></textarea>
+      <input type="text" id="modal-edit-source" placeholder="出處（選填）">
+      <div class="modal-edit-who-row">
+        <span class="whoami-label">新增者</span>
+        <div class="whoami-buttons">
+          <button type="button" class="modal-who-btn" data-who="A">__NAME_A__</button>
+          <button type="button" class="modal-who-btn" data-who="B">__NAME_B__</button>
+        </div>
+      </div>
+      <div class="wheel-item-edit-actions">
+        <button id="modal-save-btn" type="button">儲存</button>
+        <button id="modal-cancel-edit-btn" type="button" class="cancel">取消</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1395,10 +1507,13 @@ html.theme-dark .modal{
 const CONFIG = {
   // ⚠️ 暫時除錯用：設為 true 會跳過密碼門，方便在 Claude 預覽。
   // 要正式上線前，記得改回 false！
-  SKIP_GATE: true,
+  SKIP_GATE: false,
 
   // 通行密語：兩人都用同一個密碼進站
   PASSWORD: "1001",
+
+  // 訪客密語：給朋友看句子用，只能瀏覽不能編輯
+  GUEST_PASSWORD: "1234",
 
   // 兩個人的名字（會顯示在「我是」按鈕、積分板上）
   NAME_A: "Stan",
@@ -1450,12 +1565,31 @@ const app = document.getElementById("app");
 function tryEnter(pw) {
   if (pw === CONFIG.PASSWORD) {
     localStorage.setItem("sentence_site_authed", "1");
+    localStorage.setItem("sentence_site_role", "owner");
+    gate.classList.add("hidden");
+    app.classList.remove("hidden");
+    boot();
+  } else if (pw === CONFIG.GUEST_PASSWORD) {
+    localStorage.setItem("sentence_site_authed", "1");
+    localStorage.setItem("sentence_site_role", "guest");
     gate.classList.add("hidden");
     app.classList.remove("hidden");
     boot();
   } else {
     document.getElementById("gate-error").textContent = "密語不對喔，再試一次。";
   }
+}
+
+function isGuest() {
+  return localStorage.getItem("sentence_site_role") === "guest";
+}
+
+function applyGuestRestrictions() {
+  document.getElementById("menu-btn").style.display = "none";
+  document.querySelector(".whoami").style.display = "none";
+  document.querySelector(".add-card").style.display = "none";
+  document.querySelector(".modal-actions").style.display = "none";
+  document.body.classList.add("is-guest");
 }
 
 document.getElementById("gate-btn").addEventListener("click", () => {
@@ -1587,6 +1721,7 @@ function initNavDrawer() {
   });
 }
 function goToPage(page) {
+  if (isGuest()) page = "home";
   document.getElementById("page-home").classList.toggle("hidden", page !== "home");
   document.getElementById("page-board").classList.toggle("hidden", page !== "board");
   document.getElementById("page-wheel").classList.toggle("hidden", page !== "wheel");
@@ -1609,21 +1744,80 @@ function showNavPlaceholder(label) {
 }
 
 // ---------------- 句子完整內容彈窗 ----------------
+let currentModalSentenceId = null;
+
 function openSentenceModal(id) {
   const s = allSentences.find(x => x.id === id);
   if (!s) return;
+  currentModalSentenceId = id;
   document.getElementById("modal-text").textContent = `「${s.text}」`;
   const metaParts = [];
   if (s.source) metaParts.push(s.source);
   if (s.addedByName) metaParts.push(s.addedByName);
   document.getElementById("modal-meta").textContent = metaParts.join(" · ");
   document.getElementById("modal-copy").dataset.text = s.text;
+  exitSentenceEditMode();
   document.getElementById("sentence-modal").classList.add("open");
   document.getElementById("sentence-modal-overlay").classList.add("open");
 }
 function closeSentenceModal() {
   document.getElementById("sentence-modal").classList.remove("open");
   document.getElementById("sentence-modal-overlay").classList.remove("open");
+  currentModalSentenceId = null;
+}
+function enterSentenceEditMode() {
+  const s = allSentences.find(x => x.id === currentModalSentenceId);
+  if (!s) return;
+  document.getElementById("modal-edit-text").value = s.text;
+  document.getElementById("modal-edit-source").value = s.source || "";
+  document.querySelectorAll(".modal-who-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.who === s.addedBy);
+  });
+  document.getElementById("modal-view").classList.add("hidden");
+  document.getElementById("modal-edit").classList.remove("hidden");
+}
+function exitSentenceEditMode() {
+  document.getElementById("modal-view").classList.remove("hidden");
+  document.getElementById("modal-edit").classList.add("hidden");
+}
+async function saveSentenceEdit() {
+  if (isGuest()) return;
+  if (!currentModalSentenceId) return;
+  const newText = document.getElementById("modal-edit-text").value.trim();
+  if (!newText) { alert("句子不能空白。"); return; }
+  const newSource = document.getElementById("modal-edit-source").value.trim();
+  const activeWhoBtn = document.querySelector(".modal-who-btn.active");
+  const newWho = activeWhoBtn ? activeWhoBtn.dataset.who : "A";
+  const btn = document.getElementById("modal-save-btn");
+  btn.disabled = true;
+  btn.textContent = "儲存中…";
+  try {
+    await updateDoc(doc(db, "sentences", currentModalSentenceId), {
+      text: newText,
+      source: newSource,
+      addedBy: newWho,
+      addedByName: nameOf(newWho)
+    });
+    openSentenceModal(currentModalSentenceId);
+  } catch (err) {
+    console.error(err);
+    alert("儲存失敗，檢查一下網路或重新整理後再試。");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "儲存";
+  }
+}
+async function deleteSentenceFromModal() {
+  if (isGuest()) return;
+  if (!currentModalSentenceId) return;
+  if (!confirm("確定要刪除這句嗎？刪除後無法復原。")) return;
+  try {
+    await deleteDoc(doc(db, "sentences", currentModalSentenceId));
+    closeSentenceModal();
+  } catch (err) {
+    console.error(err);
+    alert("刪除失敗，檢查一下網路或重新整理後再試。");
+  }
 }
 function initSentenceModal() {
   document.getElementById("sentence-list").addEventListener("click", e => {
@@ -1639,6 +1833,17 @@ function initSentenceModal() {
   document.getElementById("modal-close").addEventListener("click", closeSentenceModal);
   document.getElementById("sentence-modal-overlay").addEventListener("click", closeSentenceModal);
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeSentenceModal(); });
+
+  document.getElementById("modal-edit-btn").addEventListener("click", enterSentenceEditMode);
+  document.getElementById("modal-cancel-edit-btn").addEventListener("click", exitSentenceEditMode);
+  document.getElementById("modal-save-btn").addEventListener("click", saveSentenceEdit);
+  document.getElementById("modal-delete-btn").addEventListener("click", deleteSentenceFromModal);
+  document.querySelectorAll(".modal-who-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".modal-who-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+  });
 
   document.getElementById("modal-copy").addEventListener("click", async (e) => {
     const btn = e.currentTarget;
@@ -1662,6 +1867,7 @@ function initSentenceModal() {
 function boot() {
   if (booted) return;
   booted = true;
+  if (isGuest()) applyGuestRestrictions();
   initWhoami();
   initViewToggle();
   initNavDrawer();
@@ -1678,6 +1884,21 @@ function boot() {
 
   document.getElementById("search-input").addEventListener("input", e => {
     renderList(e.target.value);
+  });
+
+  document.getElementById("score-num-A").addEventListener("click", () => {
+    authorFilter = authorFilter === "A" ? null : "A";
+    renderList(document.getElementById("search-input").value);
+    document.getElementById("sentence-list").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("score-num-B").addEventListener("click", () => {
+    authorFilter = authorFilter === "B" ? null : "B";
+    renderList(document.getElementById("search-input").value);
+    document.getElementById("sentence-list").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("author-filter-clear").addEventListener("click", () => {
+    authorFilter = null;
+    renderList(document.getElementById("search-input").value);
   });
 
   document.getElementById("add-btn").addEventListener("click", addSentence);
@@ -1735,6 +1956,7 @@ function boot() {
 
 // ---------------- 新增句子 ----------------
 async function addSentence() {
+  if (isGuest()) return;
   const textEl = document.getElementById("new-text");
   const sourceEl = document.getElementById("new-source");
   const msg = document.getElementById("add-msg");
@@ -1802,11 +2024,22 @@ function hashString(str) {
 }
 
 // ---------------- 搜尋列表 ----------------
+let authorFilter = null; // null / "A" / "B"
+
 function renderList(keyword) {
   const list = document.getElementById("sentence-list");
   const kw = (keyword || "").trim().toLowerCase();
 
+  const chip = document.getElementById("author-filter-chip");
+  if (authorFilter) {
+    document.getElementById("author-filter-text").textContent = `只顯示 ${nameOf(authorFilter)} 的句子`;
+    chip.classList.remove("hidden");
+  } else {
+    chip.classList.add("hidden");
+  }
+
   const filtered = allSentences.filter(s => {
+    if (authorFilter && s.addedBy !== authorFilter) return false;
     if (!kw) return true;
     return (
       (s.text || "").toLowerCase().includes(kw) ||
@@ -1839,6 +2072,7 @@ function escapeHtml(str) {
 
 // ---------------- 留言大聲公 ----------------
 async function sendBoardMessage() {
+  if (isGuest()) return;
   const textEl = document.getElementById("board-text");
   const msg = document.getElementById("board-msg");
   const text = textEl.value.trim();
@@ -1977,6 +2211,7 @@ function formatRelativeTime(ts) {
 
 // ---- 標籤管理 ----
 async function addFoodTag() {
+  if (isGuest()) return;
   const input = document.getElementById("wheel-newtag-text");
   const msg = document.getElementById("wheel-newtag-msg");
   const name = input.value.trim();
@@ -2077,6 +2312,7 @@ function renderAddTagPicker() {
 
 // ---- 新增 / 編輯 / 刪除選項 ----
 async function addFoodItem() {
+  if (isGuest()) return;
   const input = document.getElementById("wheel-text");
   const msg = document.getElementById("wheel-add-msg");
   const name = input.value.trim();
